@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}AttendAI · Accounts & roles{% endblock %}
+{% block page_title %}Accounts & roles{% endblock %}
+{% block content %}
+<div class="page-heading-row"><div><div class="eyebrow">ACCESS CONTROL</div><h1>Accounts & permissions</h1><p>Create authorized faculty accounts and manage access. Public registration is disabled.</p></div></div>
+<div class="dashboard-grid account-grid">
+  <section class="panel account-create-panel">
+    <div class="panel-header"><div><h2>Create an account</h2><p>New users can sign in after the account is created.</p></div></div>
+    <form method="post" action="{{ url_for('create_account') }}" class="settings-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label class="field-label" for="accountName">Full name</label><input class="form-control" id="accountName" name="display_name" required maxlength="80" placeholder="Faculty name">
+      <label class="field-label" for="accountUsername">Username</label><input class="form-control" id="accountUsername" name="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_.-]{3,32}" placeholder="e.g. faculty.dsa">
+      <label class="field-label" for="accountRole">Role</label><select class="form-control" id="accountRole" name="role"><option value="faculty">Faculty</option><option value="admin">Administrator</option></select>
+      <label class="field-label" for="accountPassword">Temporary password</label><input class="form-control" id="accountPassword" name="password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters">
+      <label class="field-label" for="accountPasswordConfirm">Confirm password</label><input class="form-control" id="accountPasswordConfirm" name="confirm_password" type="password" required minlength="10" autocomplete="new-password" placeholder="Enter the password again">
+      <p class="field-help">Share initial credentials privately and ask the account owner to change them before institutional deployment.</p>
+      <button class="primary-button" type="submit">＋ Create account</button>
+    </form>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><div><h2>Permission guide</h2><p>Role-based access used by AttendAI</p></div></div>
+    <div class="setting-row"><div><strong>Administrator</strong><span>Student enrolment/deletion, subjects, settings, account management, attendance and reports</span></div><span class="pill warning">ADMIN</span></div>
+    <div class="setting-row"><div><strong>Faculty</strong><span>Dashboard, live attendance, student directory and report exports</span></div><span class="pill success">FACULTY</span></div>
+    <p class="note-text">This prototype stores accounts in the local SQLite database. For a multi-computer institutional deployment, use HTTPS, secure backups, stronger operational controls and a reviewed account recovery process.</p>
+  </section>
+</div>
+<section class="panel">
+  <div class="panel-header"><div><h2>Registered accounts <span class="count-badge">{{ accounts|length }}</span></h2><p>Disabled faculty accounts cannot sign in. Administrator accounts cannot be disabled here.</p></div></div>
+  <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Created</th><th>Status</th><th>Action</th></tr></thead><tbody>
+  {% for account in accounts %}<tr><td><span class="table-primary">{{ account.display_name }}</span></td><td>{{ account.username }}</td><td><span class="pill {% if account.role == 'admin' %}warning{% else %}neutral{% endif %}">{{ account.role|upper }}</span></td><td>{{ account.created_at }}</td><td>{% if account.active %}<span class="pill success">ACTIVE</span>{% else %}<span class="pill danger">DISABLED</span>{% endif %}</td><td>{% if account.role == 'faculty' %}<form method="post" action="{{ url_for('toggle_account', user_id=account.user_id) }}" class="inline-form"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="{% if account.active %}danger-button{% else %}table-button{% endif %}" type="submit">{% if account.active %}Disable{% else %}Enable{% endif %}</button></form>{% else %}<span class="field-help">Protected</span>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="6" class="empty-state">No accounts have been created.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

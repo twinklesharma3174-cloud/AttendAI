@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}AttendAI · Faculty Dashboard{% endblock %}
+{% block page_title %}Faculty dashboard{% endblock %}
+{% block content %}
+<section class="welcome-banner">
+  <div><div class="welcome-label">FACULTY CONTROL CENTER</div><h1>Attendance overview</h1><p>Track daily attendance, review student participation, and monitor low-attendance alerts.</p></div>
+  <div class="banner-side"><div class="banner-badge">AI RECOGNITION</div><div class="banner-date">{{ current_date }}</div></div>
+</section>
+
+{% if not stats.session_active %}
+<div class="note-text">Today's session has not started yet. Open <strong>Live Attendance</strong> and start the camera to begin today's session and calculate absences.</div>
+{% endif %}
+
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-card-top"><span class="stat-label">REGISTERED STUDENTS</span><span class="stat-icon blue">♙</span></div><div class="stat-value">{{ stats.total_students }}</div><div class="stat-description">Active face profiles</div></div>
+  <div class="stat-card"><div class="stat-card-top"><span class="stat-label">PRESENT TODAY</span><span class="stat-icon green">✓</span></div><div class="stat-value">{{ stats.present_today }}</div><div class="stat-description">Unique students marked present</div></div>
+  <div class="stat-card"><div class="stat-card-top"><span class="stat-label">NOT YET PRESENT</span><span class="stat-icon amber">◷</span></div><div class="stat-value">{{ stats.absent_today }}</div><div class="stat-description">Calculated after the session starts</div></div>
+  <div class="stat-card"><div class="stat-card-top"><span class="stat-label">ATTENDANCE RATE</span><span class="stat-icon purple">%</span></div><div class="stat-value">{{ stats.attendance_rate }}%</div><div class="stat-description">Based on today's active roster</div></div>
+</div>
+
+<div class="dashboard-grid">
+  <div class="panel"><div class="panel-header"><div><h2>Quick actions</h2><p>Common faculty workflows</p></div></div><div class="quick-actions">
+    <a href="{{ url_for('attendance') }}" class="action-card"><span class="action-icon green">◉</span><span class="action-copy"><strong>Start live attendance</strong><small>Face match + randomized head movement</small></span><span class="action-arrow">→</span></a>
+    {% if current_user.role == 'admin' %}<a href="{{ url_for('add_student') }}" class="action-card"><span class="action-icon blue">＋</span><span class="action-copy"><strong>Enroll a student</strong><small>Save a face template and optional email address</small></span><span class="action-arrow">→</span></a>{% endif %}
+    <a href="{{ url_for('subjects') }}" class="action-card"><span class="action-icon amber">▦</span><span class="action-copy"><strong>{% if current_user.role == 'admin' %}Manage subjects{% else %}View subjects{% endif %}</strong><small>{% if current_user.role == 'admin' %}Create and select course-wise attendance{% else %}Review course-wise attendance options{% endif %}</small></span><span class="action-arrow">→</span></a>
+    <a href="{{ url_for('reports', period='weekly') }}" class="action-card"><span class="action-icon purple">▤</span><span class="action-copy"><strong>Weekly and monthly reports</strong><small>View summaries and export CSV or PDF</small></span><span class="action-arrow">→</span></a>
+  </div></div>
+  <div class="panel"><div class="panel-header"><div><h2>System status</h2><p>Attendance requires the randomized head-movement challenge</p></div><span class="pill success">READY</span></div>
+    <div class="service-row"><span><i class="mini-dot green-dot"></i> Face detection · YuNet</span><strong>Loaded</strong></div>
+    <div class="service-row"><span><i class="mini-dot green-dot"></i> Face recognition · SFace</span><strong>Loaded</strong></div>
+    <div class="service-row"><span><i class="mini-dot green-dot"></i> Randomized head movement</span><strong>Required</strong></div>
+    <div class="service-row"><span><i class="mini-dot green-dot"></i> Persistent attendance database</span><strong>SQLite + CSV</strong></div>
+  </div>
+</div>
+
+<div class="panel alert-panel">
+  <div class="panel-header"><div><h2>Low-attendance alerts</h2><p>Students below the configured {{ low_threshold }}% attendance threshold, calculated from recorded sessions.</p></div>
+  {% if email_notifications_configured %}<form method="post" action="{{ url_for('send_low_attendance_notifications') }}" onsubmit="return confirm('Send low-attendance email alerts to students with a saved email address?');"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="secondary-button" type="submit">Send email alerts</button></form>{% else %}<span class="pill neutral">IN-APP ALERTS</span>{% endif %}
+  </div>
+  {% if low_students %}
+  <div class="table-wrapper"><table><thead><tr><th>Student ID</th><th>Student</th><th>Email</th><th>Present</th><th>Sessions</th><th>Attendance</th></tr></thead><tbody>
+  {% for student in low_students %}<tr><td><span class="id-chip">{{ student.student_id }}</span></td><td><span class="table-primary">{{ student.name }}</span></td><td>{{ student.email or '—' }}</td><td>{{ student.present }}</td><td>{{ student.sessions }}</td><td><span class="pill danger">{{ student.attendance_rate }}%</span></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="empty-state">No low-attendance alerts based on the recorded sessions yet.</div>{% endif %}
+  {% if not email_notifications_configured %}<p class="note-text">Email delivery is optional and is not configured yet. In-app alerts work now; SMTP can be configured with environment variables when you are ready.</p>{% endif %}
+</div>
+
+<div class="panel"><div class="panel-header"><div><h2>Recent attendance</h2><p>Most recent saved entries for today</p></div><a class="text-link" href="{{ url_for('reports', period='daily') }}">Open today's report →</a></div>
+  <div class="table-wrapper"><table><thead><tr><th>Student ID</th><th>Name</th><th>Subject</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody>
+  {% for row in recent_rows %}<tr><td><span class="id-chip">{{ row['Student ID'] }}</span></td><td><span class="table-primary">{{ row['Name'] }}</span></td><td><span class="id-chip">{{ row['Subject Code'] }}</span></td><td>{{ row['Date'] }}</td><td>{{ row['Time'] }}</td><td><span class="pill success">{{ row['Status'] }}</span></td></tr>
+  {% else %}<tr><td colspan="6" class="empty-state">No attendance records have been saved today.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

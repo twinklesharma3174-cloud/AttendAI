@@ -1,0 +1,19 @@
+**pycache**/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+# AttendAI private session key
+
+.attendai_session_key
+
+# Local attendance database
+
+attendai.db
+attendai.db-shm
+attendai.db-wal
+
+# Local configuration
+
+.vscode/

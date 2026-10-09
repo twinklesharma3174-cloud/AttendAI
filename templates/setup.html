@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Initial setup · AttendAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+  <main class="auth-shell setup-shell">
+    <section class="auth-brand-panel">
+      <div class="auth-logo">A</div>
+      <div class="auth-brand-title">AttendAI</div>
+      <div class="auth-brand-subtitle">ADMINISTRATOR INITIALIZATION</div>
+      <div class="auth-graphic" aria-hidden="true"><span></span><i></i><b></b></div>
+      <p>Set up the first administrator account. This page becomes unavailable after setup is complete.</p>
+      <div class="auth-trust-note"><span class="status-dot"></span> One-time setup</div>
+    </section>
+    <section class="auth-form-panel">
+      <div class="auth-eyebrow">FIRST-TIME CONFIGURATION</div>
+      <h1>Create administrator</h1>
+      <p class="auth-intro">Choose your own username and a strong password. No default credentials are used.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash-message {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+      <form method="post" action="{{ url_for('setup') }}" class="auth-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <label for="display_name">Your name</label>
+        <input class="form-control auth-input" id="display_name" name="display_name" required maxlength="80" value="{{ display_name }}" placeholder="e.g. AttendAI Administrator">
+        <label for="username">Administrator username</label>
+        <input class="form-control auth-input" id="username" name="username" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_.-]{3,32}" value="{{ username }}" placeholder="Choose a username">
+        <label for="password">Password</label>
+        <input class="form-control auth-input" id="password" name="password" type="password" autocomplete="new-password" required minlength="10" placeholder="At least 10 characters">
+        <label for="confirm_password">Confirm password</label>
+        <input class="form-control auth-input" id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="10" placeholder="Enter the password again">
+        <button type="submit" class="primary-button auth-submit">Create administrator <span>→</span></button>
+      </form>
+      <p class="auth-footnote">Passwords are stored as secure hashes, not plaintext.</p>
+    </section>
+  </main>
+  <footer class="auth-footer">AttendAI · Local hackathon prototype</footer>
+</body>
+</html>

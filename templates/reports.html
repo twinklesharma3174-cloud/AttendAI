@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}AttendAI · Reports{% endblock %}
+{% block page_title %}Reports & analytics{% endblock %}
+{% block content %}
+<div class="page-heading-row"><div><div class="eyebrow">RECORDS & AUDIT</div><h1>Attendance reports</h1><p>Generate daily, weekly, monthly or custom-range summaries with downloadable PDF and CSV files.</p></div></div>
+
+<div class="panel">
+  <div class="panel-header"><div><h2>Report filters</h2><p>Select the period to update all statistics and downloads.</p></div></div>
+  <form class="filter-form" method="get" action="{{ url_for('reports') }}">
+    <label>Period<select name="period" id="reportPeriod"><option value="daily" {% if period == 'daily' %}selected{% endif %}>Daily</option><option value="weekly" {% if period == 'weekly' %}selected{% endif %}>Weekly (Monday to today)</option><option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Monthly (month start to today)</option><option value="custom" {% if period == 'custom' %}selected{% endif %}>Custom range</option></select></label>
+    <label>Start date<input type="date" name="start" value="{{ start_date }}" max="{{ end_date }}"></label>
+    <label>End date<input type="date" name="end" value="{{ end_date }}"></label>
+    <label>Subject<select name="subject_id"><option value="all" {% if selected_subject_id == 'all' %}selected{% endif %}>All subjects</option>{% for subject in subjects %}<option value="{{ subject.subject_id }}" {% if selected_subject_id == subject.subject_id|string %}selected{% endif %}>{{ subject.name }}{% if not subject.active %} (legacy){% endif %}</option>{% endfor %}</select></label>
+    <button class="primary-button" type="submit">Apply filters</button>
+  </form>
+  <div class="button-row export-row"><a class="primary-button" href="{{ url_for('export_report', period=period, start=start_date, end=end_date, subject_id=selected_subject_id) }}">↓ Export CSV</a><a class="secondary-button" href="{{ url_for('export_pdf_report', period=period, start=start_date, end=end_date, subject_id=selected_subject_id) }}">▤ Download PDF</a></div>
+  <p class="note-text">Report range: <strong>{{ start_date }}</strong> through <strong>{{ end_date }}</strong> · Subject: <strong>{{ selected_subject.name if selected_subject else 'All subjects' }}</strong> · Recorded subject sessions: <strong>{{ session_count }}</strong>. Each recorded subject/date counts as a separate lecture session.</p>
+</div>
+
+<div class="stats-grid two-stat-grid">
+  <div class="stat-card"><div class="stat-card-top"><span class="stat-label">ATTENDANCE EVENTS</span><span class="stat-icon blue">▤</span></div><div class="stat-value">{{ record_count }}</div><div class="stat-description">Unique present records in this range</div></div>
+  <div class="stat-card"><div class="stat-card-top"><span class="stat-label">ACTIVE STUDENTS</span><span class="stat-icon purple">♙</span></div><div class="stat-value">{{ student_count }}</div><div class="stat-description">Currently enrolled profiles</div></div>
+</div>
+
+<div class="panel alert-panel"><div class="panel-header"><div><h2>Low-attendance students</h2><p>Below {{ low_threshold }}% for the selected reporting period.</p></div>
+  {% if email_notifications_configured %}<form method="post" action="{{ url_for('send_low_attendance_notifications', subject_id=selected_subject_id) }}" onsubmit="return confirm('Send email alerts to students below the configured threshold?');"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="secondary-button" type="submit">Send email alerts</button></form>{% else %}<span class="pill neutral">EMAIL NOT CONFIGURED</span>{% endif %}
+</div>
+{% if low_students %}<div class="table-wrapper"><table><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Present</th><th>Eligible sessions</th><th>Absent</th><th>Attendance</th></tr></thead><tbody>{% for student in low_students %}<tr><td>{{ student.student_id }}</td><td>{{ student.name }}</td><td>{{ student.email or '—' }}</td><td>{{ student.present }}</td><td>{{ student.sessions }}</td><td>{{ student.absent }}</td><td><span class="pill danger">{{ student.attendance_rate }}%</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state">No student is below the threshold in this selected range.</div>{% endif %}</div>
+
+<div class="panel"><div class="panel-header"><div><h2>Student attendance summary</h2><p>Present and absent counts are based on the sessions stored in AttendAI.</p></div></div>
+  <div class="table-wrapper"><table><thead><tr><th>Student ID</th><th>Name</th><th>Present</th><th>Eligible sessions</th><th>Absent</th><th>Attendance %</th></tr></thead><tbody>
+  {% for student in summaries %}<tr><td><span class="id-chip">{{ student.student_id }}</span></td><td><span class="table-primary">{{ student.name }}</span></td><td>{{ student.present }}</td><td>{{ student.sessions }}</td><td>{{ student.absent }}</td><td>{% if student.attendance_rate is not none %}<span class="pill {% if student.attendance_rate < low_threshold %}danger{% else %}success{% endif %}">{{ student.attendance_rate }}%</span>{% else %}—{% endif %}</td></tr>
+  {% else %}<tr><td colspan="6" class="empty-state">No active students are registered.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+
+<div class="panel"><div class="panel-header"><div><h2>Attendance event log</h2><p>Individual presence records for the selected period.</p></div></div>
+  <div class="table-wrapper"><table><thead><tr><th>Student ID</th><th>Name</th><th>Subject</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody>
+  {% for row in rows %}<tr><td><span class="id-chip">{{ row['Student ID'] }}</span></td><td>{{ row['Name'] }}</td><td><span class="id-chip">{{ row['Subject Code'] }}</span></td><td>{{ row['Date'] }}</td><td>{{ row['Time'] }}</td><td><span class="pill success">{{ row['Status'] }}</span></td></tr>
+  {% else %}<tr><td colspan="6" class="empty-state">No attendance events for the selected date range.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

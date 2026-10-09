@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}AttendAI · Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block content %}
+<div class="page-heading-row"><div><div class="eyebrow">SYSTEM CONFIGURATION</div><h1>Application settings</h1><p>Set faculty alert thresholds and review the local storage/security configuration.</p></div></div>
+<div class="settings-grid">
+  <div class="panel"><div class="panel-header"><div><h2>Low-attendance alerts</h2><p>Students below this threshold appear on the dashboard and reports.</p></div></div>
+    <form method="post" action="{{ url_for('settings') }}" class="settings-form"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label class="field-label" for="lowAttendanceThreshold">Attendance threshold (%)</label>
+      <input class="form-control" id="lowAttendanceThreshold" name="low_attendance_threshold" type="number" min="1" max="100" step="1" value="{{ low_attendance_threshold }}" required>
+      <p class="field-help">Example: 75 means any student with attendance below 75% is flagged.</p>
+      <button class="primary-button" type="submit">Save threshold</button>
+    </form>
+    <div class="setting-row"><div><strong>Recorded sessions</strong><span>Recorded subject/date lecture sessions</span></div><span class="setting-value">{{ total_sessions }}</span></div>
+  </div>
+  <div class="panel"><div class="panel-header"><div><h2>Email notification status</h2><p>Optional delivery of low-attendance alerts</p></div>{% if email_notifications_configured %}<span class="pill success">CONFIGURED</span>{% else %}<span class="pill warning">NOT CONFIGURED</span>{% endif %}</div>
+    {% if email_notifications_configured %}<p class="note-text">SMTP environment variables are present. Use the “Send email alerts” button on the dashboard or reports page to contact eligible students with saved email addresses.</p>{% else %}<p class="note-text">In-app alerts are available immediately. To enable actual email delivery, configure these environment variables in the same PowerShell window before starting AttendAI:</p><pre class="env-block">$env:ATTENDAI_SMTP_HOST="smtp.example.com"
+$env:ATTENDAI_SMTP_PORT="587"
+$env:ATTENDAI_SMTP_USERNAME="your-account"
+$env:ATTENDAI_SMTP_PASSWORD="your-app-password"
+$env:ATTENDAI_SMTP_FROM="attendance@example.com"</pre><p class="field-help">Use your provider's SMTP settings and an app password where required. Do not commit credentials or share them in screenshots.</p>{% endif %}
+  </div>
+  <div class="panel"><div class="panel-header"><div><h2>Recognition pipeline</h2><p>Attendance requires a completed randomized head-movement challenge.</p></div><span class="pill success">ENABLED</span></div>
+    <div class="setting-row"><div><strong>Face detection</strong><span>YuNet ONNX model</span></div><span class="setting-value">Loaded</span></div>
+    <div class="setting-row"><div><strong>Face recognition</strong><span>SFace ONNX model</span></div><span class="setting-value">Loaded</span></div>
+    <div class="setting-row"><div><strong>Anti-spoof screening</strong><span>Disabled by current prototype configuration</span></div><span class="setting-value">Disabled</span></div>
+    <div class="setting-row"><div><strong>Randomized live challenge</strong><span>Turn, return to center, turn opposite way</span></div><span class="setting-value">Required</span></div>
+  </div>
+  <div class="panel"><div class="panel-header"><div><h2>Database & privacy</h2><p>Local prototype storage</p></div></div>
+    <div class="setting-row"><div><strong>Student metadata & attendance</strong><span>SQLite: attendai.db</span></div><span class="setting-value">Persistent</span></div>
+    <div class="setting-row"><div><strong>Face feature templates</strong><span>Local .npz files under data/students</span></div><span class="setting-value">Local</span></div>
+    <div class="setting-row"><div><strong>CSV compatibility export</strong><span>Daily files in attendance/</span></div><span class="setting-value">Enabled</span></div>
+    <p class="note-text">This is a localhost hackathon prototype. Before institutional deployment, review permissions, retention policies, encrypted backups, documented consent, and presentation-attack detection.</p>
+  </div>
+</div>
+{% endblock %}

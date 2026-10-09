@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}AttendAI · Enroll student{% endblock %}
+{% block page_title %}Enroll student{% endblock %}
+{% block content %}
+<div class="page-heading-row"><div><div class="eyebrow">STUDENT DIRECTORY</div><h1>New student enrollment</h1><p>Enter a unique student ID and capture one clear face image.</p></div><a class="secondary-link-button" href="{{ url_for('students') }}">← Back to students</a></div>
+<div class="enrollment-grid">
+    <div class="panel enrollment-form-panel"><div class="panel-header"><div><h2>Student details</h2><p>Fields marked with * are required</p></div></div>
+        <form id="studentRegistrationForm">
+            <label class="field-label" for="studentId">Student ID *</label><input id="studentId" name="student_id" class="form-control" required maxlength="30" pattern="[A-Za-z0-9_-]{1,30}" placeholder="e.g. AGC2026_001"><small class="field-help">Letters, numbers, hyphens and underscores only.</small>
+            <label class="field-label" for="studentName">Full name *</label><input id="studentName" name="name" class="form-control" required maxlength="80" placeholder="Enter student's name"><small class="field-help">Use the student's preferred institutional name.</small>
+            <label class="field-label" for="studentEmail">Student email (optional)</label><input id="studentEmail" name="email" type="email" class="form-control" maxlength="120" placeholder="student@example.com"><small class="field-help">Used only if faculty enables low-attendance email alerts.</small>
+            <div class="consent-note"><strong>Before capture</strong><span>Make sure the student has been informed and has agreed to the capture and use of their face template for attendance.</span></div>
+            <div id="enrollmentMessage" class="inline-message" role="status">Start the camera, center one face, then select “Capture and enroll”.</div>
+            <button id="captureEnrollBtn" class="primary-button full-width" type="submit" disabled>Capture and enroll</button>
+        </form>
+    </div>
+    <div class="panel enrollment-camera-panel"><div class="panel-header"><div><h2>Face enrollment camera</h2><p>Use even lighting and face the camera directly.</p></div><span id="enrollCameraStatus" class="pill neutral">CAMERA OFF</span></div>
+        <div class="enroll-video-wrap"><video id="enrollVideo" autoplay playsinline muted></video><div id="enrollPlaceholder" class="enroll-placeholder"><div class="camera-symbol">◎</div><strong>Camera preview</strong><span>Camera access starts only when you click the button.</span></div></div>
+        <div class="button-row"><button id="startEnrollCameraBtn" class="secondary-button" type="button">Open camera</button><button id="stopEnrollCameraBtn" class="secondary-button" type="button" disabled>Stop camera</button></div>
+        <ul class="instruction-list"><li>Use a well-lit room and keep the full face visible.</li><li>Only one person should be in the frame.</li><li>This prototype stores a face feature template, not the captured photo.</li></ul>
+    </div>
+</div>
+<canvas id="enrollCanvas" class="hidden"></canvas>
+{% endblock %}

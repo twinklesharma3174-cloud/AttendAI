@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}AttendAI · Live attendance{% endblock %}
+{% block page_title %}Live attendance{% endblock %}
+{% block content %}
+<div class="page-heading-row attendance-page-heading">
+    <div><div class="eyebrow">REAL-TIME SESSION · FACULTY WORKSPACE</div><h1>Face recognition attendance</h1><p>Choose a subject, verify the live head-movement challenge, and record attendance once per subject and day.</p></div>
+    <span id="cameraStatus" class="pill neutral">CAMERA OFF</span>
+</div>
+<div class="attendance-layout">
+    <section class="panel camera-card" id="cameraCard" aria-label="Live attendance camera">
+        <div class="camera-heading">
+            <div><h2>Live recognition camera</h2><p>Face detection · Registered identity · randomized movement verification</p></div>
+            <span class="camera-live-badge"><i class="mini-dot" id="cameraDot"></i> LIVE VIEW</span>
+        </div>
+        <div class="attendance-camera-toolbar">
+            <div class="subject-pick">
+                <label for="attendanceSubject">Attendance subject</label>
+                <select id="attendanceSubject" name="subject_id" class="form-control" required>
+                    <option value="">Choose a subject before starting</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.subject_id }}">{{ subject.code }} · {{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="camera-top-actions"><button id="fullscreenCameraBtn" class="fullscreen-button" type="button" title="Expand the camera into full screen">⛶ Full screen</button></div>
+        </div>
+        <div class="camera-panel" id="cameraPanel">
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="overlayCanvas"></canvas>
+            <div id="cameraPlaceholder" class="camera-placeholder">
+                <div class="camera-symbol" aria-hidden="true">◎</div>
+                <h2>Camera ready</h2>
+                <p>Select a subject, start the camera, and keep one face centered. The left/right instruction will appear directly over the face box.</p>
+            </div>
+        </div>
+        <div class="button-row camera-controls"><button id="startCameraBtn" class="primary-button" type="button">▶ &nbsp; Start camera</button><button id="stopCameraBtn" class="secondary-button" type="button" disabled>■ &nbsp; Stop camera</button></div>
+        <div class="privacy-inline">Use only with informed consent. Facial recognition can make mistakes; verify uncertain matches manually.</div>
+    </section>
+    <aside class="panel recognition-panel">
+        <div class="panel-header"><div><h2>Recognition activity</h2><p>Live results from the current session</p></div><span class="pill neutral">YUNET + SFACE</span></div>
+        <div id="recognitionStatus" class="recognition-status" aria-live="polite">Camera not started.</div>
+        <div class="recognition-stats"><div><span>Students recognized</span><strong id="presentCount">0</strong><small>Unique profiles this session</small></div><div><span>Unknown events</span><strong id="unknownCount">0</strong><small>New unknown appearances</small></div></div>
+        <div class="log-heading"><h3>Recent events</h3><span>Latest first</span></div>
+        <div id="recognitionLog" class="recognition-log"><div class="log-empty">No recognition events yet.</div></div>
+        <a class="text-link report-link" href="{{ url_for('reports') }}">View attendance reports →</a>
+    </aside>
+</div>
+<canvas id="captureCanvas" class="hidden"></canvas>
+{% endblock %}

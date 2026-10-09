@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}AttendAI · Subjects{% endblock %}
+{% block page_title %}Subject management{% endblock %}
+{% block content %}
+<div class="page-heading-row"><div><div class="eyebrow">COURSE WORKSPACE</div><h1>Subjects & courses</h1><p>Create a subject for each course. Attendance is recorded independently for each selected subject and date.</p></div></div>
+<div class="dashboard-grid subject-page-grid">
+  <div class="panel">
+    {% if current_user.role == 'admin' %}
+    <div class="panel-header"><div><h2>Add a subject</h2><p>Example: Data Structures (DSA), Applied Mathematics (MATH)</p></div></div>
+    <form class="settings-form" method="post" action="{{ url_for('subjects') }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label class="field-label" for="subjectName">Subject name</label>
+      <input class="form-control" id="subjectName" name="name" type="text" maxlength="80" placeholder="Data Structures and Algorithms" required>
+      <label class="field-label" for="subjectCode">Subject code</label>
+      <input class="form-control" id="subjectCode" name="code" type="text" minlength="2" maxlength="15" pattern="[A-Za-z0-9_-]{2,15}" placeholder="DSA" required>
+      <p class="field-help">Use a unique code with 2–15 letters, numbers, hyphens or underscores. Codes are automatically converted to uppercase.</p>
+      <button class="primary-button" type="submit">＋ Create subject</button>
+    </form>
+    {% else %}
+    <div class="panel-header"><div><h2>Subject directory</h2><p>Subjects are created and maintained by an administrator.</p></div></div>
+    <p class="note-text">You can select existing subjects in Live Attendance and filter reports by subject.</p>
+    {% endif %}
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div><h2>How subject attendance works</h2><p>Faculty workflow</p></div></div>
+    <div class="service-row"><span>1. Create each course once</span><strong>Subjects page</strong></div>
+    <div class="service-row"><span>2. Select a subject before camera</span><strong>Live attendance</strong></div>
+    <div class="service-row"><span>3. Record one entry per subject/student/date</span><strong>Duplicate-safe</strong></div>
+    <div class="service-row"><span>4. Filter report and export</span><strong>Reports</strong></div>
+    <p class="note-text">For this prototype, each subject can have one attendance session per calendar day. Later, if you need separate morning/evening lectures or multiple sections, we can upgrade to unique lecture-session IDs.</p>
+  </div>
+</div>
+<div class="panel">
+  <div class="panel-header"><div><h2>Subject directory <span class="count-badge">{{ subjects|length }}</span></h2><p>Subjects available to faculty.</p></div></div>
+  <div class="table-wrapper"><table><thead><tr><th>Subject</th><th>Code</th><th>Attendance records</th><th>Usage</th></tr></thead><tbody>
+    {% for subject in subjects %}<tr><td><span class="table-primary">{{ subject.name }}</span></td><td><span class="id-chip">{{ subject.code }}</span></td><td>{% if subject.active %}<a class="text-link" href="{{ url_for('reports', subject_id=subject.subject_id) }}">View report →</a>{% else %}Historical records only{% endif %}</td><td>{% if subject.active %}<span class="pill success">ACTIVE</span>{% else %}<span class="pill neutral">LEGACY</span>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="4" class="empty-state">No subjects yet. Add your first subject above.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

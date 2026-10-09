@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Sign in · AttendAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-brand-panel">
+      <div class="auth-logo">A</div>
+      <div class="auth-brand-title">AttendAI</div>
+      <div class="auth-brand-subtitle">SMART ATTENDANCE MANAGEMENT</div>
+      <div class="auth-graphic" aria-hidden="true"><span></span><i></i><b></b></div>
+      <p>Reliable classroom attendance workflows, facial recognition and subject-wise reporting in one workspace.</p>
+      <div class="auth-trust-note"><span class="status-dot"></span> Authorized institutional access</div>
+    </section>
+    <section class="auth-form-panel">
+      <div class="auth-eyebrow">FACULTY WORKSPACE</div>
+      <h1>Welcome back</h1>
+      <p class="auth-intro">Sign in to manage attendance and student records.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash-message {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+      <form method="post" action="{{ url_for('login') }}" class="auth-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <label for="username">Username</label>
+        <input class="form-control auth-input" id="username" name="username" autocomplete="username" required maxlength="32" value="{{ username }}" placeholder="Enter your username" autofocus>
+        <label for="password">Password</label>
+        <input class="form-control auth-input" id="password" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password">
+        <button type="submit" class="primary-button auth-submit">Sign in securely <span>→</span></button>
+      </form>
+      <p class="auth-footnote">Accounts are created by the administrator. Public sign-up is disabled.</p>
+    </section>
+  </main>
+  <footer class="auth-footer">AttendAI · Local hackathon prototype</footer>
+</body>
+</html>

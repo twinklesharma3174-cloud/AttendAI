@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}AttendAI{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="app-layout">
+    <aside class="sidebar">
+        <a href="{{ url_for('dashboard') }}" class="brand">
+            <div class="brand-icon">A</div>
+            <div><div class="brand-name">AttendAI</div><div class="brand-subtitle">SMART ATTENDANCE</div></div>
+        </a>
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">WORKSPACE</div>
+            <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}"><span class="nav-icon">⌂</span>Dashboard</a>
+            <a href="{{ url_for('students') }}" class="nav-item {% if request.endpoint in ['students', 'add_student', 'delete_student'] %}active{% endif %}"><span class="nav-icon">♙</span>Students</a>
+            <a href="{{ url_for('attendance') }}" class="nav-item {% if request.endpoint in ['attendance', 'recognize'] %}active{% endif %}"><span class="nav-icon">◉</span>Live Attendance</a>
+            <a href="{{ url_for('subjects') }}" class="nav-item {% if request.endpoint == 'subjects' %}active{% endif %}"><span class="nav-icon">▦</span>Subjects</a>
+            <a href="{{ url_for('reports') }}" class="nav-item {% if request.endpoint in ['reports', 'export_report', 'export_pdf_report'] %}active{% endif %}"><span class="nav-icon">▤</span>Reports &amp; Exports</a>
+            {% if current_user and current_user.role == 'admin' %}
+            <div class="nav-section-title">ADMINISTRATION</div>
+            <a href="{{ url_for('accounts') }}" class="nav-item {% if request.endpoint in ['accounts', 'create_account', 'toggle_account'] %}active{% endif %}"><span class="nav-icon">♧</span>Accounts &amp; Roles</a>
+            <a href="{{ url_for('settings') }}" class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}"><span class="nav-icon">⚙</span>Settings</a>
+            {% endif %}
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="system-status"><span class="status-dot"></span><div><strong>Recognition Engine</strong><small>YuNet + SFace loaded</small></div></div>
+            <div class="sidebar-footer">AttendAI · Local prototype</div>
+        </div>
+    </aside>
+    <main class="main-content">
+        <header class="topbar">
+            <div><div class="page-title">{% block page_title %}Dashboard{% endblock %}</div><div class="page-subtitle">AI-powered attendance operations</div></div>
+            <div class="topbar-right">
+                <div class="live-indicator"><span class="status-dot"></span> Local system</div>
+                <div class="admin-profile"><div class="admin-avatar">{{ (current_user.display_name[:1] if current_user else 'A')|upper }}</div><div><strong>{{ current_user.display_name if current_user else 'Administrator' }}</strong><small>{{ (current_user.role|title if current_user else 'Local workspace') }}</small></div></div>
+                <form method="post" action="{{ url_for('logout') }}" class="logout-form"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button type="submit" class="logout-button">Sign out</button></form>
+            </div>
+        </header>
+        <section class="content-area">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash-message {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
